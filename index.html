@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triatlón Hamburg 2026 - Performance Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #0f172a; color: #f8fafc; font-family: 'Inter', sans-serif; }
+        .card { background-color: #1e293b; border: 1px solid #334155; border-radius: 0.5rem; padding: 1.5rem; }
+    </style>
+</head>
+<body class="p-8">
+    <div class="max-w-6xl mx-auto">
+        <header class="mb-12 border-b border-slate-700 pb-6 flex justify-between items-end">
+            <div>
+                <h1 class="text-3xl font-bold tracking-tight">TRIATLÓN HAMBURGO 2026</h1>
+                <p class="text-slate-400 mt-2 uppercase tracking-widest text-sm">Performance & Nutrition Monitoring</p>
+            </div>
+            <div class="text-right">
+                <p class="text-4xl font-mono font-bold text-blue-400" id="countdown">--</p>
+                <p class="text-xs text-slate-500 uppercase tracking-tighter">Días para la competición</p>
+            </div>
+        </header>
+
+        <main class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- KPIs -->
+            <div class="card">
+                <h2 class="text-slate-400 text-xs font-bold uppercase mb-4">Estado Físico</h2>
+                <div class="flex justify-between items-baseline">
+                    <span class="text-3xl font-bold">77.0 <span class="text-sm font-normal text-slate-500">kg</span></span>
+                    <span class="text-green-400 text-sm font-medium">Estable</span>
+                </div>
+                <div class="mt-4 h-2 bg-slate-700 rounded-full overflow-hidden">
+                    <div class="bg-blue-500 h-full" style="width: 85%"></div>
+                </div>
+                <p class="text-xs text-slate-500 mt-2">Objetivo: < 75 kg</p>
+            </div>
+
+            <div class="card">
+                <h2 class="text-slate-400 text-xs font-bold uppercase mb-4">Carga Semanal</h2>
+                <div class="flex justify-between items-baseline">
+                    <span class="text-3xl font-bold">4.5 <span class="text-sm font-normal text-slate-500">h</span></span>
+                    <span class="text-slate-500 text-sm">Z2 Dominante</span>
+                </div>
+                <p class="text-xs text-slate-400 mt-4 italic">"Recuperación activa y técnica"</p>
+            </div>
+
+            <div class="card">
+                <h2 class="text-slate-400 text-xs font-bold uppercase mb-4">Nutrición (Avg)</h2>
+                <div class="flex justify-between items-baseline">
+                    <span class="text-3xl font-bold">2.350 <span class="text-sm font-normal text-slate-500">kcal</span></span>
+                    <span class="text-blue-400 text-sm italic">Balanceado</span>
+                </div>
+                <p class="text-xs text-slate-500 mt-4">Proteína: 160g | Carbo: 280g</p>
+            </div>
+
+            <!-- Training Plan -->
+            <div class="card md:col-span-2">
+                <h2 class="text-slate-400 text-xs font-bold uppercase mb-6">Plan de Entrenamiento Semanal</h2>
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between p-3 bg-slate-800 rounded border-l-4 border-blue-500">
+                        <span class="font-medium">DOMINGO (Hoy)</span>
+                        <span class="text-sm text-slate-300">Gimnasio: Espalda + Core</span>
+                    </div>
+                    <div class="flex items-center justify-between p-3 bg-slate-800/50 rounded border-l-4 border-slate-600">
+                        <span class="font-medium">LUNES</span>
+                        <span class="text-sm text-slate-400">Natación: 1.800m Técnica</span>
+                    </div>
+                    <div class="flex items-center justify-between p-3 bg-slate-800/50 rounded border-l-4 border-slate-600">
+                        <span class="font-medium">MARTES</span>
+                        <span class="text-sm text-slate-400">Carrera: 6x800m (Z4)</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Insights -->
+            <div class="card">
+                <h2 class="text-slate-400 text-xs font-bold uppercase mb-4">Insights Proactivos</h2>
+                <ul class="text-sm space-y-3 text-slate-300">
+                    <li class="flex gap-2">
+                        <span class="text-blue-500">•</span>
+                        <span>Faltan 160 días. El foco debe ser la técnica de nado.</span>
+                    </li>
+                    <li class="flex gap-2">
+                        <span class="text-blue-500">•</span>
+                        <span>Viaje detectado (Mar-Jue). Sesiones de carrera priorizadas.</span>
+                    </li>
+                </ul>
+            </div>
+        </main>
+
+        <footer class="mt-12 text-center text-slate-600 text-xs uppercase tracking-widest">
+            Generado automáticamente por Clawd Performance System v1.0
+        </footer>
+    </div>
+
+    <script>
+        const targetDate = new Date('2026-07-11T09:00:00');
+        function updateCountdown() {
+            const now = new Date();
+            const diff = targetDate - now;
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            document.getElementById('countdown').innerText = days;
+        }
+        updateCountdown();
+    </script>
+</body>
+</html>
