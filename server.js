@@ -5,7 +5,8 @@ const path = require('path');
 const PORT = 8080;
 
 const server = http.createServer((req, res) => {
-    let filePath = path.join(__dirname, req.url === '/' ? 'index.html' : req.url);
+    let urlPath = req.url === '/' ? '/index.html' : req.url;
+    let filePath = path.join(__dirname, urlPath);
     
     fs.readFile(filePath, (err, content) => {
         if (err) {
@@ -13,7 +14,14 @@ const server = http.createServer((req, res) => {
             res.end('Not Found');
             return;
         }
-        res.writeHead(200, { 'Content-Type': 'text/html' });
+        
+        // Basic content-type detection
+        let contentType = 'text/html';
+        if (filePath.endsWith('.json')) contentType = 'application/json';
+        if (filePath.endsWith('.js')) contentType = 'application/javascript';
+        if (filePath.endsWith('.css')) contentType = 'text/css';
+        
+        res.writeHead(200, { 'Content-Type': contentType });
         res.end(content);
     });
 });
