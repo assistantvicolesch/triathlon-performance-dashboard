@@ -108,6 +108,14 @@ const server = http.createServer(async (req, res) => {
             };
             const hevyResult = await httpsRequest(hevyOpts);
 
+            // Fetch Weather (Hamburg)
+            const weatherOpts = {
+                hostname: 'api.open-meteo.com',
+                path: '/v1/forecast?latitude=53.5511&longitude=9.9937&current_weather=true&timezone=Europe%2FBerlin',
+                method: 'GET'
+            };
+            const weatherResult = await httpsRequest(weatherOpts);
+
             // Load TRAINING_PLAN.md
             const trainingPlanPath = path.join(__dirname, '..', 'TRAINING_PLAN.md');
             const trainingPlan = fs.existsSync(trainingPlanPath) ? fs.readFileSync(trainingPlanPath, 'utf8') : '';
@@ -145,6 +153,7 @@ const server = http.createServer(async (req, res) => {
                 hevy: {
                     workouts: hevyResult.data?.workouts || hevyResult.data || []
                 },
+                weather: weatherResult.data || {},
                 trainingPlan: trainingPlan,
                 generated: new Date().toISOString()
             }));

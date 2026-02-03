@@ -29,6 +29,9 @@
                     <div class="flex items-center gap-3">
                         <div class="w-3 h-3 bg-green-500 rounded-full pulse" id="status-indicator"></div>
                         <span class="text-xs text-slate-400 uppercase tracking-widest">Live Data</span>
+                        <div id="weather-display" class="hidden md:flex items-center gap-2 ml-4 px-3 py-1 bg-slate-800/50 rounded-full border border-slate-700/50">
+                            <!-- Weather injected here -->
+                        </div>
                     </div>
                     <h1 class="text-3xl md:text-4xl font-bold mt-2 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
                         TRIATHLON HAMBURG 2026
@@ -264,6 +267,17 @@
                 
                 if (data.trainingPlan) {
                     renderTrainingData(data.trainingPlan);
+                }
+
+                if (data.weather && data.weather.current_weather) {
+                    const w = data.weather.current_weather;
+                    const weatherEl = document.getElementById('weather-display');
+                    weatherEl.classList.remove('hidden');
+                    weatherEl.innerHTML = `
+                        <span class="text-xs text-slate-300">Hamburg:</span>
+                        <span class="text-sm font-bold text-blue-300">${w.temperature}°C</span>
+                        <span class="text-[10px] text-slate-500 ml-1">Wind: ${w.windspeed}km/h</span>
+                    `;
                 }
 
                 updateCharts(data.strava.weeklyStats);
