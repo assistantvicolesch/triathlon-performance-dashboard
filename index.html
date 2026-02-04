@@ -1,185 +1,339 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Triatlón Hamburg 2026 - Performance Dashboard</title>
+    <title>Triathlon Hamburg 2026 - Live Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        body { background-color: #0f172a; color: #f8fafc; font-family: 'Inter', sans-serif; }
-        .card { background-color: #1e293b; border: 1px solid #334155; border-radius: 0.5rem; padding: 1.5rem; }
+        * { font-family: 'Inter', sans-serif; }
+        body { background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%); min-height: 100vh; }
+        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(71, 85, 105, 0.3); }
+        .glow { box-shadow: 0 0 30px rgba(59, 130, 246, 0.15); }
+        .pulse { animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .activity-card:hover { transform: translateY(-2px); transition: all 0.2s ease; }
+        .stat-value { font-variant-numeric: tabular-nums; }
+        .loading-skeleton { background: linear-gradient(90deg, #1e293b 25%, #334155 50%, #1e293b 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
+        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
     </style>
 </head>
-<body class="p-8">
-    <div class="max-w-6xl mx-auto">
-        <header class="mb-12 border-b border-slate-700 pb-6 flex justify-between items-end">
-            <div>
-                <h1 class="text-3xl font-bold tracking-tight">TRIATLÓN HAMBURGO 2026</h1>
-                <p class="text-slate-400 mt-2 uppercase tracking-widest text-sm font-semibold">Performance & Nutrition Monitoring</p>
-            </div>
-            <div class="text-right group cursor-default">
-                <p class="text-4xl font-mono font-bold text-blue-400 transition-all" id="countdown">--</p>
-                <p class="text-xs text-slate-500 uppercase tracking-tighter" id="countdown-label">Días para la competición</p>
-                <p class="text-[10px] text-slate-600 font-mono opacity-0 group-hover:opacity-100 transition-opacity" id="countdown-detail"></p>
+<body class="text-slate-100 p-4 md:p-8">
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <header class="glass rounded-2xl p-6 mb-6 glow">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <div class="flex items-center gap-3">
+                        <div class="w-3 h-3 bg-green-500 rounded-full pulse" id="status-indicator"></div>
+                        <span class="text-xs text-slate-400 uppercase tracking-widest">Live Data</span>
+                        <div id="weather-display" class="hidden md:flex items-center gap-2 ml-4 px-3 py-1 bg-slate-800/50 rounded-full border border-slate-700/50">
+                            <!-- Weather injected here -->
+                        </div>
+                    </div>
+                    <h1 class="text-3xl md:text-4xl font-bold mt-2 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                        TRIATHLON HAMBURG 2026
+                    </h1>
+                    <p class="text-slate-400 mt-1">Sprint Distance Performance Tracker</p>
+                </div>
+                <div class="text-right">
+                    <div class="text-5xl font-bold stat-value text-blue-400" id="countdown">--</div>
+                    <div class="text-xs text-slate-500 uppercase tracking-widest mt-1">Days Until Race</div>
+                    <div class="text-xs text-slate-600 mt-2" id="last-updated">Loading...</div>
+                </div>
             </div>
         </header>
 
-        <main class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <!-- KPIs -->
-            <div class="card hover:border-blue-500/50 transition-colors">
-                <h2 class="text-slate-400 text-xs font-bold uppercase mb-4 flex justify-between">
-                    Estado Físico
-                    <span class="text-[10px] bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded">Peso</span>
-                </h2>
-                <div class="flex justify-between items-baseline">
-                    <span class="text-3xl font-bold">77.0 <span class="text-sm font-normal text-slate-500 font-mono">kg</span></span>
-                    <span class="text-green-400 text-xs font-bold px-2 py-1 bg-green-400/10 rounded">ESTABLE</span>
+        <!-- Prediction Section -->
+        <div class="glass rounded-xl p-5 glow mb-6 border-l-4 border-yellow-500">
+            <h2 class="text-sm text-slate-400 uppercase tracking-wider font-semibold mb-4">Performance Forecast (Target vs Real)</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="prediction-metrics">
+                <!-- Data will be inserted here -->
+            </div>
+        </div>
+
+        <!-- Main Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <div class="glass rounded-xl p-5 glow">
+                <div class="flex justify-between items-start mb-4">
+                    <span class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Weekly Distance</span>
+                    <span class="text-xs bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded">km</span>
                 </div>
-                <div class="mt-4 h-1.5 bg-slate-700 rounded-full overflow-hidden">
-                    <div class="bg-blue-500 h-full" style="width: 85%"></div>
+                <div class="text-4xl font-bold stat-value" id="weekly-distance">--</div>
+                <div class="text-sm text-slate-500 mt-1">Strava Data</div>
+            </div>
+            <div class="glass rounded-xl p-5 glow">
+                <div class="flex justify-between items-start mb-4">
+                    <span class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Training Time</span>
+                    <span class="text-xs bg-purple-500/20 text-purple-400 px-2 py-0.5 rounded">hours</span>
                 </div>
-                <div class="flex justify-between mt-2">
-                    <span class="text-[10px] text-slate-500">Mínimo: 76.5</span>
-                    <span class="text-[10px] text-slate-500">Objetivo: < 75.0</span>
+                <div class="text-4xl font-bold stat-value" id="weekly-time">--</div>
+                <div class="text-sm text-slate-500 mt-1">Active Moving Time</div>
+            </div>
+            <div class="glass rounded-xl p-5 glow">
+                <div class="flex justify-between items-start mb-4">
+                    <span class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Activities</span>
+                    <span class="text-xs bg-green-500/20 text-green-400 px-2 py-0.5 rounded">this week</span>
+                </div>
+                <div class="text-4xl font-bold stat-value" id="activity-count">--</div>
+                <div class="text-sm text-slate-500 mt-1">Total Sessions</div>
+            </div>
+            <div class="glass rounded-xl p-5 glow">
+                <div class="flex justify-between items-start mb-4">
+                    <span class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Gym Sessions</span>
+                    <span class="text-xs bg-orange-500/20 text-orange-400 px-2 py-0.5 rounded">Hevy</span>
+                </div>
+                <div class="text-4xl font-bold stat-value" id="gym-sessions">--</div>
+                <div class="text-sm text-slate-500 mt-1">Weekly Strength</div>
+            </div>
+        </div>
+
+        <!-- Charts and Details Row -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+            <div class="glass rounded-xl p-5 glow lg:col-span-2">
+                <h2 class="text-sm text-slate-400 uppercase tracking-wider font-semibold mb-4">Weekly Activity Breakdown</h2>
+                <div class="h-64">
+                    <canvas id="activity-chart"></canvas>
                 </div>
             </div>
-
-            <div class="card hover:border-blue-500/50 transition-colors">
-                <h2 class="text-slate-400 text-xs font-bold uppercase mb-4 flex justify-between">
-                    Carga Semanal
-                    <span class="text-[10px] bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded">Horas</span>
-                </h2>
-                <div class="flex justify-between items-end">
-                    <div>
-                        <span class="text-3xl font-bold">4.5 <span class="text-sm font-normal text-slate-500 font-mono">h</span></span>
-                        <p class="text-xs text-slate-500 mt-1 uppercase font-bold tracking-tighter">Z2 Dominante</p>
-                    </div>
-                    <!-- Simple SVG Sparkline -->
-                    <svg class="w-24 h-12 text-blue-500" viewBox="0 0 100 40">
-                        <path d="M0,35 L15,30 L30,38 L45,20 L60,25 L75,10 L100,5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-                    </svg>
-                </div>
-                <p class="text-[10px] text-slate-400 mt-4 italic border-t border-slate-700 pt-3">
-                    "Fase de base: construyendo resistencia aeróbica."
-                </p>
-            </div>
-
-            <div class="card hover:border-blue-500/50 transition-colors">
-                <h2 class="text-slate-400 text-xs font-bold uppercase mb-4 flex justify-between">
-                    Nutrición
-                    <span class="text-[10px] bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded">Calorías</span>
-                </h2>
-                <div class="flex justify-between items-baseline">
-                    <span class="text-3xl font-bold">2.350 <span class="text-sm font-normal text-slate-500 font-mono">kcal</span></span>
-                    <span class="text-blue-400 text-xs font-bold px-2 py-1 bg-blue-400/10 rounded uppercase">Balanceado</span>
-                </div>
-                <div class="mt-6 grid grid-cols-3 gap-1 text-center">
-                    <div>
-                        <div class="text-[10px] text-slate-500 font-bold uppercase">Prot</div>
-                        <div class="text-xs font-mono">160g</div>
-                    </div>
-                    <div>
-                        <div class="text-[10px] text-slate-500 font-bold uppercase">Carb</div>
-                        <div class="text-xs font-mono">280g</div>
-                    </div>
-                    <div>
-                        <div class="text-[10px] text-slate-500 font-bold uppercase">Fat</div>
-                        <div class="text-xs font-mono">70g</div>
-                    </div>
+            <div class="glass rounded-xl p-5 glow">
+                <h2 class="text-sm text-slate-400 uppercase tracking-wider font-semibold mb-4">Training Distribution</h2>
+                <div class="h-64">
+                    <canvas id="distribution-chart"></canvas>
                 </div>
             </div>
+        </div>
 
-            <!-- Training Plan -->
-            <div class="card md:col-span-2">
-                <h2 class="text-slate-400 text-xs font-bold uppercase mb-6">Plan de Entrenamiento Semanal</h2>
-                <div class="grid grid-cols-1 gap-2" id="training-schedule">
-                    <!-- Dynamic rendering via JS -->
-                </div>
+        <!-- Training Plan -->
+        <div class="glass rounded-xl p-5 glow mb-6">
+            <h2 class="text-sm text-slate-400 uppercase tracking-wider font-semibold mb-4">Training Structure & Cycles</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6" id="plan-cycles">
+                <!-- Macrociclo and Mesociclo will be inserted here -->
             </div>
-
-            <!-- Insights -->
-            <div class="card bg-gradient-to-br from-slate-800 to-slate-900 border-blue-500/30">
-                <h2 class="text-blue-400 text-xs font-bold uppercase mb-4">Insights Proactivos</h2>
-                <ul class="text-sm space-y-4">
-                    <li class="flex gap-3">
-                        <div class="w-1 h-auto bg-blue-500 rounded-full"></div>
-                        <span class="text-slate-300">Faltan 160 días. El foco debe ser la <span class="text-blue-400 font-semibold">técnica de nado</span>.</span>
-                    </li>
-                    <li class="flex gap-3">
-                        <div class="w-1 h-auto bg-blue-500 rounded-full"></div>
-                        <span class="text-slate-300">Viaje detectado (Mar-Jue). Sesiones de <span class="text-blue-400 font-semibold">carrera</span> priorizadas para logística simple.</span>
-                    </li>
-                    <li class="flex gap-3">
-                        <div class="w-1 h-auto bg-yellow-500/50 rounded-full"></div>
-                        <span class="text-slate-300">Déficit calórico ligero detectado. Mantener ingesta de proteína.</span>
-                    </li>
-                </ul>
+            <h3 class="text-sm text-slate-400 uppercase tracking-wider font-semibold mb-4">Current Week Detail (High Intensity)</h3>
+            <div class="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-7 gap-2" id="weekly-plan">
+                <!-- Generated by JS -->
             </div>
-        </main>
+        </div>
 
-        <footer class="mt-12 text-center text-slate-600 text-xs uppercase tracking-widest">
-            Generado automáticamente por Clawd Performance System v1.0
+        <!-- Recent Activities -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+            <div class="glass rounded-xl p-5 glow">
+                <h2 class="text-sm text-slate-400 uppercase tracking-wider font-semibold mb-4">Recent Activities (Strava)</h2>
+                <div id="strava-activities" class="space-y-2 max-h-80 overflow-y-auto"></div>
+            </div>
+            <div class="glass rounded-xl p-5 glow">
+                <h2 class="text-sm text-slate-400 uppercase tracking-wider font-semibold mb-4">Gym Workouts (Hevy)</h2>
+                <div id="hevy-workouts" class="space-y-2 max-h-80 overflow-y-auto"></div>
+            </div>
+        </div>
+
+        <footer class="text-center text-slate-600 text-xs uppercase tracking-widest py-4">
+            Clawd Performance System v2.1 | Training Plan & Forecast Integrated
         </footer>
     </div>
 
     <script>
-        const targetDate = new Date('2026-07-11T09:00:00');
-        const weekDays = ['DOMINGO', 'LUNES', 'MARTES', 'MIÉRCOLES', 'JUEVES', 'VIERNES', 'SÁBADO'];
-        // Plan Semana 02-08 Feb (TRAINING_PLAN.md)
-        const schedule = [
-            { day: 0, activity: 'Tirada Larga: 12km Z2 (6:15 min/km)', type: 'Carrera' },
-            { day: 1, activity: 'GYM: PULL (Espalda/Bíceps) + Bici transporte', type: 'Fuerza' },
-            { day: 2, activity: 'Carrera: 5x1km (4:45) + Natación', type: 'Carrera' },
-            { day: 3, activity: 'Carrera Calidad: 10min + 5x1km (4:45) + 5min', type: 'Carrera' },
-            { day: 4, activity: 'GYM: LEGS + Bici Rodillo 45min Z2', type: 'Fuerza' },
-            { day: 5, activity: 'Natación 1500m + GYM: PUSH', type: 'Agua' },
-            { day: 6, activity: 'BRICK: 30km Bici Z2 + 3km Carrera (5:30)', type: 'Bici' }
-        ];
+        const RACE_DATE = new Date('2026-07-11T09:00:00');
+        let activityChart, distributionChart;
 
-        function renderSchedule() {
-            const container = document.getElementById('training-schedule');
-            const today = new Date().getDay();
+        function updateCountdown() {
+            const now = new Date();
+            const diff = RACE_DATE - now;
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            document.getElementById('countdown').textContent = days;
+        }
+
+        function renderStravaList(activities) {
+            const container = document.getElementById('strava-activities');
+            container.innerHTML = activities.map(a => `
+                <div class="glass bg-slate-800/30 p-3 rounded-lg flex justify-between items-center activity-card">
+                    <div>
+                        <div class="text-sm font-semibold text-slate-200">${a.name}</div>
+                        <div class="text-[10px] text-slate-500 uppercase tracking-wider">${new Date(a.start_date).toLocaleDateString()} • ${a.type}</div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-sm font-bold text-blue-400">${(a.distance/1000).toFixed(2)} km</div>
+                        <div class="text-[10px] text-slate-500">${Math.floor(a.moving_time/60)} min</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderHevyList(workouts) {
+            const container = document.getElementById('hevy-workouts');
+            container.innerHTML = workouts.map(w => `
+                <div class="glass bg-slate-800/30 p-3 rounded-lg flex justify-between items-center activity-card">
+                    <div>
+                        <div class="text-sm font-semibold text-slate-200">${w.title}</div>
+                        <div class="text-[10px] text-slate-500 uppercase tracking-wider">${new Date(w.start_time).toLocaleDateString()}</div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-sm font-bold text-orange-400">${w.exercises.length} Exercises</div>
+                        <div class="text-[10px] text-slate-500">${Math.floor((new Date(w.end_time) - new Date(w.start_time))/60000)} min</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderTrainingData(markdown) {
+            const weeklyPlanContainer = document.getElementById('weekly-plan');
+            const cyclesContainer = document.getElementById('plan-cycles');
+            const predictionContainer = document.getElementById('prediction-metrics');
             
-            container.innerHTML = schedule.map(item => {
-                const isToday = item.day === today;
+            const lines = markdown.split('\n');
+            let currentSection = '';
+            let macroContent = [];
+            let mesoContent = [];
+            let weeklyTable = [];
+            let predictionContent = [];
+
+            lines.forEach(line => {
+                const trimmed = line.trim();
+                if (trimmed.includes('## 📅 Plan Global')) currentSection = 'macro';
+                else if (trimmed.includes('## 🗓️ Plan Mensual')) currentSection = 'meso';
+                else if (trimmed.includes('## ⚡ Plan Semanal')) currentSection = 'weekly';
+                else if (trimmed.includes('## 📈 Previsión')) currentSection = 'prediction';
+                
+                if (currentSection === 'macro' && trimmed.startsWith('- **')) macroContent.push(trimmed);
+                if (currentSection === 'meso' && (trimmed.startsWith('- **') || trimmed.startsWith('• ') || trimmed.startsWith('  - '))) mesoContent.push(trimmed);
+                if (currentSection === 'weekly' && trimmed.startsWith('| **')) weeklyTable.push(trimmed);
+                if (currentSection === 'prediction' && trimmed.startsWith('- **')) predictionContent.push(trimmed);
+            });
+
+            cyclesContainer.innerHTML = `
+                <div class="bg-slate-800/40 rounded-lg p-4 border border-slate-700/50">
+                    <h4 class="text-xs text-blue-400 uppercase font-bold mb-3 tracking-widest">Global Macrociclo</h4>
+                    <ul class="text-sm space-y-2 text-slate-300">
+                        ${macroContent.map(item => `<li>${item.replace(/- \*\*(.*?)\*\*: /g, '<b class="text-slate-100">$1:</b> ').replace(/^- /,'')}</li>`).join('')}
+                    </ul>
+                </div>
+                <div class="bg-slate-800/40 rounded-lg p-4 border border-slate-700/50">
+                    <h4 class="text-xs text-purple-400 uppercase font-bold mb-3 tracking-widest">Monthly Mesociclo</h4>
+                    <ul class="text-sm space-y-2 text-slate-300">
+                        ${mesoContent.map(item => `<li>${item.replace(/^  - /g, '• ').replace(/^- /g, '• ').replace(/\*\*(.*?)\*\*: /g, '<b class="text-slate-100">$1:</b> ')}</li>`).join('')}
+                    </ul>
+                </div>
+            `;
+
+            weeklyPlanContainer.innerHTML = weeklyTable.map(row => {
+                const parts = row.split('|').filter(p => p.trim() !== '');
+                const day = parts[0].trim().replace(/\*\*/g, '');
+                const session = parts[1]?.trim() || '';
+                const notes = parts[3]?.trim() || '';
+                const isHecho = notes.toLowerCase().includes('hecho');
+
                 return `
-                    <div class="flex items-center justify-between p-3 ${isToday ? 'bg-blue-500/10 border-blue-500' : 'bg-slate-800/30 border-slate-700'} rounded border-l-4 transition-all hover:translate-x-1">
-                        <span class="font-bold text-xs ${isToday ? 'text-blue-400' : 'text-slate-500'}">${weekDays[item.day]} ${isToday ? '(HOY)' : ''}</span>
-                        <span class="text-sm ${isToday ? 'text-slate-100 font-medium' : 'text-slate-400'}">${item.activity}</span>
+                    <div class="glass p-3 rounded-lg border-l-4 ${isHecho ? 'border-green-500 bg-green-500/10' : 'border-blue-500'}">
+                        <div class="text-[10px] uppercase text-slate-500 font-bold mb-1">${day}</div>
+                        <div class="text-xs font-semibold text-slate-200">${session.replace(/\*\*/g, '<b>').replace(/\*\*/g, '</b>')}</div>
+                        <div class="text-[9px] text-slate-400 mt-2 italic leading-tight">${notes}</div>
+                    </div>
+                `;
+            }).join('');
+
+            predictionContainer.innerHTML = predictionContent.map(item => {
+                const [label, values] = item.split(':').map(s => s.trim());
+                const cleanLabel = label.replace(/- \*\*/g, '').replace(/\*\*/g, '');
+                const [target, current] = values.split('.').map(s => s.trim());
+                return `
+                    <div class="flex flex-col">
+                        <span class="text-[10px] text-slate-500 uppercase font-bold">${cleanLabel}</span>
+                        <div class="flex items-baseline gap-2 mt-1">
+                            <span class="text-2xl font-bold text-yellow-500">${current?.split(':')[1] || current?.split('actual:')[1] || '---'}</span>
+                            <span class="text-xs text-slate-400">/ Target: ${target.replace('Objetivo ', '')}</span>
+                        </div>
                     </div>
                 `;
             }).join('');
         }
 
-        function updateCountdown() {
-            const now = new Date();
-            const diff = targetDate - now;
-            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-            const secs = Math.floor((diff % (1000 * 60)) / 1000);
-            
-            document.getElementById('countdown').innerText = days;
-            document.getElementById('countdown-detail').innerText = 
-                `${hours.toString().padStart(2,'0')}:${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
-        }
-
-        renderSchedule();
-        updateCountdown();
-        setInterval(updateCountdown, 1000);
-
-        // Data Fetching
-        async function loadData() {
+        async function refreshData() {
             try {
-                const response = await fetch('/api/hevy.json');
-                if (!response.ok) return;
-                const workouts = await response.json();
-                console.log('Data synced:', workouts.length, 'entries');
+                const response = await fetch('/api/dashboard');
+                const data = await response.json();
+                
+                document.getElementById('weekly-distance').textContent = data.strava.weeklyStats.totalDistance.toFixed(1);
+                document.getElementById('weekly-time').textContent = data.strava.weeklyStats.totalTime.toFixed(1);
+                document.getElementById('activity-count').textContent = data.strava.weeklyStats.activityCount;
+                
+                const gymCount = data.hevy.workouts.filter(w => new Date(w.start_time) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)).length;
+                document.getElementById('gym-sessions').textContent = gymCount;
+
+                renderStravaList(data.strava.activities);
+                renderHevyList(data.hevy.workouts);
+                
+                if (data.trainingPlan) {
+                    renderTrainingData(data.trainingPlan);
+                }
+
+                if (data.weather && data.weather.current_weather) {
+                    const w = data.weather.current_weather;
+                    const weatherEl = document.getElementById('weather-display');
+                    weatherEl.classList.remove('hidden');
+                    weatherEl.innerHTML = `
+                        <span class="text-xs text-slate-300">Hamburg:</span>
+                        <span class="text-sm font-bold text-blue-300">${w.temperature}°C</span>
+                        <span class="text-[10px] text-slate-500 ml-1">Wind: ${w.windspeed}km/h</span>
+                    `;
+                }
+
+                updateCharts(data.strava.weeklyStats);
+                document.getElementById('last-updated').textContent = 'Updated: ' + new Date().toLocaleTimeString();
             } catch (e) {
-                console.warn('Backend API not ready yet.');
+                console.error('Fetch error:', e);
             }
         }
-        loadData();
+
+        function updateCharts(stats) {
+            const ctx1 = document.getElementById('activity-chart').getContext('2d');
+            const types = Object.keys(stats.byType);
+            if (activityChart) activityChart.destroy();
+            activityChart = new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: types,
+                    datasets: [{
+                        label: 'Distance (km)',
+                        data: types.map(t => stats.byType[t].distance),
+                        backgroundColor: 'rgba(59, 130, 246, 0.5)',
+                        borderColor: 'rgb(59, 130, 246)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' } } }
+                }
+            });
+
+            const ctx2 = document.getElementById('distribution-chart').getContext('2d');
+            if (distributionChart) distributionChart.destroy();
+            distributionChart = new Chart(ctx2, {
+                type: 'doughnut',
+                data: {
+                    labels: types,
+                    datasets: [{
+                        data: types.map(t => stats.byType[t].count),
+                        backgroundColor: ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8', boxWidth: 10, font: { size: 10 } } } }
+                }
+            });
+        }
+
+        updateCountdown();
+        refreshData();
+        setInterval(updateCountdown, 60000);
+        setInterval(refreshData, 300000);
     </script>
 </body>
 </html>
