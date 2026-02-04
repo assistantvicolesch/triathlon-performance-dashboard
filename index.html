@@ -17,9 +17,10 @@
                 <h1 class="text-3xl font-bold tracking-tight">TRIATLÓN HAMBURGO 2026</h1>
                 <p class="text-slate-400 mt-2 uppercase tracking-widest text-sm font-semibold">Performance & Nutrition Monitoring</p>
             </div>
-            <div class="text-right">
-                <p class="text-4xl font-mono font-bold text-blue-400" id="countdown">--</p>
-                <p class="text-xs text-slate-500 uppercase tracking-tighter">Días para la competición</p>
+            <div class="text-right group cursor-default">
+                <p class="text-4xl font-mono font-bold text-blue-400 transition-all" id="countdown">--</p>
+                <p class="text-xs text-slate-500 uppercase tracking-tighter" id="countdown-label">Días para la competición</p>
+                <p class="text-[10px] text-slate-600 font-mono opacity-0 group-hover:opacity-100 transition-opacity" id="countdown-detail"></p>
             </div>
         </header>
 
@@ -153,11 +154,18 @@
             const now = new Date();
             const diff = targetDate - now;
             const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const secs = Math.floor((diff % (1000 * 60)) / 1000);
+            
             document.getElementById('countdown').innerText = days;
+            document.getElementById('countdown-detail').innerText = 
+                `${hours.toString().padStart(2,'0')}:${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
         }
 
         renderSchedule();
         updateCountdown();
+        setInterval(updateCountdown, 1000);
 
         // Data Fetching
         async function loadData() {
