@@ -125,14 +125,15 @@
     <script>
         const targetDate = new Date('2026-07-11T09:00:00');
         const weekDays = ['DOMINGO', 'LUNES', 'MARTES', 'MIÉRCOLES', 'JUEVES', 'VIERNES', 'SÁBADO'];
+        // Plan Semana 02-08 Feb (TRAINING_PLAN.md)
         const schedule = [
-            { day: 0, activity: 'Gimnasio: Espalda + Core', type: 'Fuerza' },
-            { day: 1, activity: 'Natación: 1.800m Técnica', type: 'Agua' },
-            { day: 2, activity: 'Carrera: 6x800m (Z4)', type: 'Carrera' },
-            { day: 3, activity: 'Carrera: 45min (Z2)', type: 'Carrera' },
-            { day: 4, activity: 'Rest / Movilidad', type: 'Descanso' },
-            { day: 5, activity: 'Natación: 2.000m Resistencia', type: 'Agua' },
-            { day: 6, activity: 'Bici: 90min (Z2)', type: 'Bici' }
+            { day: 0, activity: 'Tirada Larga: 12km Z2 (6:15 min/km)', type: 'Carrera' },
+            { day: 1, activity: 'GYM: PULL (Espalda/Bíceps) + Bici transporte', type: 'Fuerza' },
+            { day: 2, activity: 'Carrera: 5x1km (4:45) + Natación', type: 'Carrera' },
+            { day: 3, activity: 'Carrera Calidad: 10min + 5x1km (4:45) + 5min', type: 'Carrera' },
+            { day: 4, activity: 'GYM: LEGS + Bici Rodillo 45min Z2', type: 'Fuerza' },
+            { day: 5, activity: 'Natación 1500m + GYM: PUSH', type: 'Agua' },
+            { day: 6, activity: 'BRICK: 30km Bici Z2 + 3km Carrera (5:30)', type: 'Bici' }
         ];
 
         function renderSchedule() {
