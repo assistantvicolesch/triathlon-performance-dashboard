@@ -155,6 +155,11 @@ const server = http.createServer(async (req, res) => {
                 },
                 weather: weatherResult.data || {},
                 trainingPlan: trainingPlan,
+                healthData: {
+                    vo2max: 37.6, // To be dynamic in future
+                    weight: 77.2,
+                    threshold: '5:00 min/km'
+                },
                 generated: new Date().toISOString()
             }));
         } catch (e) {

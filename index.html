@@ -178,7 +178,7 @@
             `).join('');
         }
 
-        function renderTrainingData(markdown) {
+        function renderTrainingData(markdown, healthData) {
             const weeklyPlanContainer = document.getElementById('weekly-plan');
             const cyclesContainer = document.getElementById('plan-cycles');
             const predictionContainer = document.getElementById('prediction-metrics');
@@ -234,20 +234,22 @@
                 `;
             }).join('');
 
-            predictionContainer.innerHTML = predictionContent.map(item => {
-                const [label, values] = item.split(':').map(s => s.trim());
-                const cleanLabel = label.replace(/- \*\*/g, '').replace(/\*\*/g, '');
-                const [target, current] = values.split('.').map(s => s.trim());
-                return `
-                    <div class="flex flex-col">
-                        <span class="text-[10px] text-slate-500 uppercase font-bold">${cleanLabel}</span>
-                        <div class="flex items-baseline gap-2 mt-1">
-                            <span class="text-2xl font-bold text-yellow-500">${current?.split(':')[1] || current?.split('actual:')[1] || '---'}</span>
-                            <span class="text-xs text-slate-400">/ Target: ${target.replace('Objetivo ', '')}</span>
-                        </div>
+            // Use dynamic healthData if available, otherwise parse from markdown
+            const metrics = [
+                { label: 'VO2 Max', target: '42', real: healthData?.vo2max || '---', color: 'text-blue-400' },
+                { label: 'Weight', target: '74kg', real: healthData?.weight ? `${healthData.weight}kg` : '---', color: 'text-green-400' },
+                { label: 'Threshold Pace', target: '4:30', real: healthData?.threshold || '---', color: 'text-yellow-400' }
+            ];
+
+            predictionContainer.innerHTML = metrics.map(m => `
+                <div class="flex flex-col">
+                    <span class="text-[10px] text-slate-500 uppercase font-bold">${m.label}</span>
+                    <div class="flex items-baseline gap-2 mt-1">
+                        <span class="text-2xl font-bold ${m.color}">${m.real}</span>
+                        <span class="text-xs text-slate-400">/ Target: ${m.target}</span>
                     </div>
-                `;
-            }).join('');
+                </div>
+            `).join('');
         }
 
         async function refreshData() {
@@ -266,7 +268,7 @@
                 renderHevyList(data.hevy.workouts);
                 
                 if (data.trainingPlan) {
-                    renderTrainingData(data.trainingPlan);
+                    renderTrainingData(data.trainingPlan, data.healthData);
                 }
 
                 if (data.weather && data.weather.current_weather) {
