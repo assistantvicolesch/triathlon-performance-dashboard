@@ -139,6 +139,11 @@
         const RACE_DATE = new Date('2026-07-11T09:00:00');
         let activityChart, distributionChart;
 
+        function getSpanishDay() {
+            const days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+            return days[new Date().getDay()];
+        }
+
         function updateCountdown() {
             const now = new Date();
             const diff = RACE_DATE - now;
@@ -218,17 +223,23 @@
                 </div>
             `;
 
+            const currentSpanishDay = getSpanishDay();
+
             weeklyPlanContainer.innerHTML = weeklyTable.map(row => {
                 const parts = row.split('|').filter(p => p.trim() !== '');
                 const day = parts[0].trim().replace(/\*\*/g, '');
                 const session = parts[1]?.trim() || '';
                 const notes = parts[3]?.trim() || '';
                 const isHecho = notes.toLowerCase().includes('hecho');
+                const isToday = day.toLowerCase() === currentSpanishDay.toLowerCase();
 
                 return `
-                    <div class="glass p-3 rounded-lg border-l-4 ${isHecho ? 'border-green-500 bg-green-500/10' : 'border-blue-500'}">
-                        <div class="text-[10px] uppercase text-slate-500 font-bold mb-1">${day}</div>
-                        <div class="text-xs font-semibold text-slate-200">${session.replace(/\*\*/g, '<b>').replace(/\*\*/g, '</b>')}</div>
+                    <div class="glass p-3 rounded-lg border-l-4 ${isToday ? 'border-yellow-400 bg-yellow-400/10 ring-2 ring-yellow-400/20' : isHecho ? 'border-green-500 bg-green-500/10' : 'border-blue-500'} ${isToday ? 'scale-105 z-10 shadow-[0_0_15px_rgba(250,204,21,0.2)]' : ''} transition-all duration-300">
+                        <div class="flex justify-between items-start">
+                            <div class="text-[10px] uppercase ${isToday ? 'text-yellow-400 font-black' : 'text-slate-500 font-bold'} mb-1">${day} ${isToday ? '• TODAY' : ''}</div>
+                            ${isHecho ? '<div class="text-[8px] bg-green-500/20 text-green-400 px-1 rounded font-bold">DONE</div>' : ''}
+                        </div>
+                        <div class="text-xs font-semibold ${isToday ? 'text-white' : 'text-slate-200'}">${session.replace(/\*\*/g, '<b>').replace(/\*\*/g, '</b>')}</div>
                         <div class="text-[9px] text-slate-400 mt-2 italic leading-tight">${notes}</div>
                     </div>
                 `;
