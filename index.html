@@ -63,6 +63,13 @@
                 </div>
                 <div class="text-4xl font-bold stat-value" id="weekly-distance">--</div>
                 <div class="text-sm text-slate-500 mt-1">Strava Data</div>
+                <div class="mt-4 h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
+                    <div id="distance-progress" class="h-full bg-blue-500 transition-all duration-1000" style="width: 0%"></div>
+                </div>
+                <div class="flex justify-between mt-1">
+                    <span class="text-[8px] text-slate-600 uppercase">Progress</span>
+                    <span class="text-[8px] text-slate-600 uppercase" id="distance-target">Goal: 60km</span>
+                </div>
             </div>
             <div class="glass rounded-xl p-5 glow">
                 <div class="flex justify-between items-start mb-4">
@@ -71,6 +78,13 @@
                 </div>
                 <div class="text-4xl font-bold stat-value" id="weekly-time">--</div>
                 <div class="text-sm text-slate-500 mt-1">Active Moving Time</div>
+                <div class="mt-4 h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
+                    <div id="time-progress" class="h-full bg-purple-500 transition-all duration-1000" style="width: 0%"></div>
+                </div>
+                <div class="flex justify-between mt-1">
+                    <span class="text-[8px] text-slate-600 uppercase">Efficiency</span>
+                    <span class="text-[8px] text-slate-600 uppercase" id="time-target">Goal: 10h</span>
+                </div>
             </div>
             <div class="glass rounded-xl p-5 glow">
                 <div class="flex justify-between items-start mb-4">
@@ -79,6 +93,13 @@
                 </div>
                 <div class="text-4xl font-bold stat-value" id="activity-count">--</div>
                 <div class="text-sm text-slate-500 mt-1">Total Sessions</div>
+                <div class="mt-4 h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
+                    <div id="activity-progress" class="h-full bg-green-500 transition-all duration-1000" style="width: 0%"></div>
+                </div>
+                <div class="flex justify-between mt-1">
+                    <span class="text-[8px] text-slate-600 uppercase">Consistency</span>
+                    <span class="text-[8px] text-slate-600 uppercase" id="activity-target">Goal: 7</span>
+                </div>
             </div>
             <div class="glass rounded-xl p-5 glow">
                 <div class="flex justify-between items-start mb-4">
@@ -87,6 +108,13 @@
                 </div>
                 <div class="text-4xl font-bold stat-value" id="gym-sessions">--</div>
                 <div class="text-sm text-slate-500 mt-1">Weekly Strength</div>
+                <div class="mt-4 h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
+                    <div id="gym-progress" class="h-full bg-orange-500 transition-all duration-1000" style="width: 0%"></div>
+                </div>
+                <div class="flex justify-between mt-1">
+                    <span class="text-[8px] text-slate-600 uppercase">Recovery</span>
+                    <span class="text-[8px] text-slate-600 uppercase" id="gym-target">Goal: 3</span>
+                </div>
             </div>
         </div>
 
@@ -99,9 +127,9 @@
                 </div>
             </div>
             <div class="glass rounded-xl p-5 glow">
-                <h2 class="text-sm text-slate-400 uppercase tracking-wider font-semibold mb-4">Training Distribution</h2>
+                <h2 class="text-sm text-slate-400 uppercase tracking-wider font-semibold mb-4">Training Load History</h2>
                 <div class="h-64">
-                    <canvas id="distribution-chart"></canvas>
+                    <canvas id="load-history-chart"></canvas>
                 </div>
             </div>
         </div>
@@ -137,7 +165,7 @@
 
     <script>
         const RACE_DATE = new Date('2026-07-11T09:00:00');
-        let activityChart, distributionChart;
+        let activityChart, loadHistoryChart;
 
         function getSpanishDay() {
             const days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
@@ -268,12 +296,41 @@
                 const response = await fetch('/api/dashboard');
                 const data = await response.json();
                 
+                // Fetch load stats separately
+                const loadResponse = await fetch('/api/load_stats.json');
+                const loadData = await loadResponse.json();
+                
                 document.getElementById('weekly-distance').textContent = data.strava.weeklyStats.totalDistance.toFixed(1);
                 document.getElementById('weekly-time').textContent = data.strava.weeklyStats.totalTime.toFixed(1);
                 document.getElementById('activity-count').textContent = data.strava.weeklyStats.activityCount;
                 
                 const gymCount = data.hevy.workouts.filter(w => new Date(w.start_time) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)).length;
                 document.getElementById('gym-sessions').textContent = gymCount;
+
+                // Update Progress Bars
+                const goals = { distance: 60, time: 10, activities: 7, gym: 3 };
+                const stats = {
+                    distance: data.strava.weeklyStats.totalDistance,
+                    time: data.strava.weeklyStats.totalTime,
+                    activities: data.strava.weeklyStats.activityCount,
+                    gym: gymCount
+                };
+
+                Object.keys(goals).forEach(key => {
+                    const progress = Math.min((stats[key] / goals[key]) * 100, 100);
+                    const bar = document.getElementById(`${key}-progress`);
+                    if (bar) bar.style.width = `${progress}%`;
+                });
+
+                // Update Training Time card with load status
+                if (loadData.load_status) {
+                    const timeCard = document.getElementById('weekly-time').parentElement;
+                    const statusTag = timeCard.querySelector('span:last-child');
+                    if (statusTag) {
+                        statusTag.textContent = loadData.load_status + ' Load';
+                        statusTag.className = `text-[10px] px-2 py-0.5 rounded ${loadData.load_status === 'High' ? 'bg-red-500/20 text-red-400' : 'bg-green-500/20 text-green-400'}`;
+                    }
+                }
 
                 renderStravaList(data.strava.activities);
                 renderHevyList(data.hevy.workouts);
@@ -293,14 +350,14 @@
                     `;
                 }
 
-                updateCharts(data.strava.weeklyStats);
+                updateCharts(data.strava.weeklyStats, loadData);
                 document.getElementById('last-updated').textContent = 'Updated: ' + new Date().toLocaleTimeString();
             } catch (e) {
                 console.error('Fetch error:', e);
             }
         }
 
-        function updateCharts(stats) {
+        function updateCharts(stats, loadData) {
             const ctx1 = document.getElementById('activity-chart').getContext('2d');
             const types = Object.keys(stats.byType);
             if (activityChart) activityChart.destroy();
@@ -319,26 +376,59 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    scales: { y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' } } }
+                    scales: { 
+                        y: { 
+                            beginAtZero: true, 
+                            grid: { color: 'rgba(255,255,255,0.05)' },
+                            ticks: { color: '#94a3b8' }
+                        },
+                        x: {
+                            ticks: { color: '#94a3b8' }
+                        }
+                    },
+                    plugins: {
+                        legend: { labels: { color: '#94a3b8' } }
+                    }
                 }
             });
 
-            const ctx2 = document.getElementById('distribution-chart').getContext('2d');
-            if (distributionChart) distributionChart.destroy();
-            distributionChart = new Chart(ctx2, {
-                type: 'doughnut',
+            const ctx2 = document.getElementById('load-history-chart').getContext('2d');
+            if (loadHistoryChart) loadHistoryChart.destroy();
+            
+            const loadLabels = loadData.daily_stats.map(s => s.date.split('-').slice(1).join('/'));
+            const loadValues = loadData.daily_stats.map(s => s.duration_h);
+
+            loadHistoryChart = new Chart(ctx2, {
+                type: 'line',
                 data: {
-                    labels: types,
+                    labels: loadLabels,
                     datasets: [{
-                        data: types.map(t => stats.byType[t].count),
-                        backgroundColor: ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444'],
-                        borderWidth: 0
+                        label: 'Duration (h)',
+                        data: loadValues,
+                        borderColor: '#8b5cf6',
+                        backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        borderWidth: 3,
+                        pointBackgroundColor: '#8b5cf6'
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8', boxWidth: 10, font: { size: 10 } } } }
+                    scales: { 
+                        y: { 
+                            beginAtZero: true, 
+                            grid: { color: 'rgba(255,255,255,0.05)' },
+                            ticks: { color: '#94a3b8' }
+                        },
+                        x: {
+                            ticks: { color: '#94a3b8' }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
                 }
             });
         }
