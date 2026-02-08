@@ -10,14 +10,21 @@
     <style>
         * { font-family: 'Inter', sans-serif; }
         body { background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%); min-height: 100vh; }
-        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(71, 85, 105, 0.3); }
-        .glow { box-shadow: 0 0 30px rgba(59, 130, 246, 0.15); }
+        .glass { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 1.5rem; }
+        .glow { box-shadow: 0 0 40px rgba(59, 130, 246, 0.1); }
+        .btn-action { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .btn-action:hover { transform: translateY(-1px); filter: brightness(1.2); }
+        .metric-card { position: relative; overflow: hidden; }
+        .metric-card::after { content: ''; position: absolute; top: 0; right: 0; width: 64px; height: 64px; background: linear-gradient(135deg, transparent 50%, rgba(255,255,255,0.03) 50%); }
         .pulse { animation: pulse 2s infinite; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
         .activity-card:hover { transform: translateY(-2px); transition: all 0.2s ease; }
         .stat-value { font-variant-numeric: tabular-nums; }
         .loading-skeleton { background: linear-gradient(90deg, #1e293b 25%, #334155 50%, #1e293b 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
-        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
     </style>
 </head>
 <body class="text-slate-100 p-4 md:p-8">
@@ -27,93 +34,116 @@
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
                     <div class="flex items-center gap-3">
-                        <div class="w-3 h-3 bg-green-500 rounded-full pulse" id="status-indicator"></div>
-                        <span class="text-xs text-slate-400 uppercase tracking-widest">Live Data</span>
-                        <div id="weather-display" class="hidden md:flex items-center gap-2 ml-4 px-3 py-1 bg-slate-800/50 rounded-full border border-slate-700/50">
+                        <div class="w-2.5 h-2.5 bg-green-500 rounded-full pulse" id="status-indicator"></div>
+                        <span class="text-[10px] text-slate-500 uppercase tracking-[0.2em] font-bold">System Online</span>
+                        <div id="weather-display" class="hidden md:flex items-center gap-2 ml-4 px-4 py-1.5 bg-slate-900/50 rounded-full border border-white/5">
                             <!-- Weather injected here -->
                         </div>
                     </div>
-                    <h1 class="text-3xl md:text-4xl font-bold mt-2 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-                        TRIATHLON HAMBURG 2026
+                    <h1 class="text-4xl md:text-5xl font-black mt-3 tracking-tight bg-gradient-to-br from-white via-blue-100 to-slate-500 bg-clip-text text-transparent">
+                        HAMBURG 2026
                     </h1>
-                    <p class="text-slate-400 mt-1">Sprint Distance Performance Tracker</p>
+                    <p class="text-slate-500 text-sm mt-1 font-medium tracking-wide">Elite Performance & Logistics Dashboard</p>
                 </div>
                 <div class="text-right">
                     <div class="text-5xl font-bold stat-value text-blue-400" id="countdown">--</div>
                     <div class="text-xs text-slate-500 uppercase tracking-widest mt-1">Days Until Race</div>
+                    <div class="text-[10px] bg-blue-500/20 text-blue-400 px-3 py-1 rounded-full inline-block mt-3 font-black uppercase tracking-widest border border-blue-500/20" id="training-phase">---</div>
                     <div class="text-xs text-slate-600 mt-2" id="last-updated">Loading...</div>
                 </div>
             </div>
         </header>
 
         <!-- Prediction Section -->
-        <div class="glass rounded-xl p-5 glow mb-6 border-l-4 border-yellow-500">
-            <h2 class="text-sm text-slate-400 uppercase tracking-wider font-semibold mb-4">Performance Forecast (Target vs Real)</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="prediction-metrics">
+        <div class="glass p-6 mb-6 border-l-4 border-yellow-500/50">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-[10px] text-slate-500 uppercase tracking-[0.2em] font-black">Performance Forecast vs Reality</h2>
+                <div class="flex gap-2">
+                    <div class="w-2 h-2 rounded-full bg-blue-500"></div>
+                    <div class="w-2 h-2 rounded-full bg-slate-700"></div>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8" id="prediction-metrics">
                 <!-- Data will be inserted here -->
             </div>
         </div>
 
         <!-- Main Grid -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            <div class="glass rounded-xl p-5 glow">
-                <div class="flex justify-between items-start mb-4">
-                    <span class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Weekly Distance</span>
-                    <span class="text-xs bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded">km</span>
+            <div class="glass p-6 metric-card">
+                <div class="flex justify-between items-start mb-6">
+                    <span class="text-[10px] text-slate-500 uppercase tracking-[0.2em] font-black">Weekly Distance</span>
+                    <div class="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                        <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+                    </div>
                 </div>
-                <div class="text-4xl font-bold stat-value" id="weekly-distance">--</div>
-                <div class="text-sm text-slate-500 mt-1">Strava Data</div>
-                <div class="mt-4 h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
-                    <div id="distance-progress" class="h-full bg-blue-500 transition-all duration-1000" style="width: 0%"></div>
+                <div class="flex items-baseline gap-1">
+                    <div class="text-5xl font-black tracking-tighter stat-value text-white" id="weekly-distance">--</div>
+                    <span class="text-slate-500 font-bold text-sm">km</span>
                 </div>
-                <div class="flex justify-between mt-1">
-                    <span class="text-[8px] text-slate-600 uppercase">Progress</span>
-                    <span class="text-[8px] text-slate-600 uppercase" id="distance-target">Goal: 60km</span>
+                <div class="mt-6 h-1 w-full bg-slate-900 rounded-full overflow-hidden">
+                    <div id="distance-progress" class="h-full bg-gradient-to-r from-blue-600 to-blue-400 transition-all duration-1000" style="width: 0%"></div>
                 </div>
-            </div>
-            <div class="glass rounded-xl p-5 glow">
-                <div class="flex justify-between items-start mb-4">
-                    <span class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Training Time</span>
-                    <span class="text-xs bg-purple-500/20 text-purple-400 px-2 py-0.5 rounded">hours</span>
-                </div>
-                <div class="text-4xl font-bold stat-value" id="weekly-time">--</div>
-                <div class="text-sm text-slate-500 mt-1">Active Moving Time</div>
-                <div class="mt-4 h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
-                    <div id="time-progress" class="h-full bg-purple-500 transition-all duration-1000" style="width: 0%"></div>
-                </div>
-                <div class="flex justify-between mt-1">
-                    <span class="text-[8px] text-slate-600 uppercase">Efficiency</span>
-                    <span class="text-[8px] text-slate-600 uppercase" id="time-target">Goal: 10h</span>
+                <div class="flex justify-between mt-3">
+                    <span class="text-[9px] text-slate-600 uppercase font-bold tracking-wider">Progress</span>
+                    <span class="text-[9px] text-slate-500 uppercase font-black" id="distance-target">Goal: 60km</span>
                 </div>
             </div>
-            <div class="glass rounded-xl p-5 glow">
-                <div class="flex justify-between items-start mb-4">
-                    <span class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Activities</span>
-                    <span class="text-xs bg-green-500/20 text-green-400 px-2 py-0.5 rounded">this week</span>
+            <div class="glass p-6 metric-card">
+                <div class="flex justify-between items-start mb-6">
+                    <span class="text-[10px] text-slate-500 uppercase tracking-[0.2em] font-black">Training Time</span>
+                    <div class="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center">
+                        <svg class="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </div>
                 </div>
-                <div class="text-4xl font-bold stat-value" id="activity-count">--</div>
-                <div class="text-sm text-slate-500 mt-1">Total Sessions</div>
-                <div class="mt-4 h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
-                    <div id="activity-progress" class="h-full bg-green-500 transition-all duration-1000" style="width: 0%"></div>
+                <div class="flex items-baseline gap-1">
+                    <div class="text-5xl font-black tracking-tighter stat-value text-white" id="weekly-time">--</div>
+                    <span class="text-slate-500 font-bold text-sm">hrs</span>
                 </div>
-                <div class="flex justify-between mt-1">
-                    <span class="text-[8px] text-slate-600 uppercase">Consistency</span>
-                    <span class="text-[8px] text-slate-600 uppercase" id="activity-target">Goal: 7</span>
+                <div class="mt-6 h-1 w-full bg-slate-900 rounded-full overflow-hidden">
+                    <div id="time-progress" class="h-full bg-gradient-to-r from-purple-600 to-purple-400 transition-all duration-1000" style="width: 0%"></div>
+                </div>
+                <div class="flex justify-between mt-3">
+                    <span class="text-[9px] text-slate-600 uppercase font-bold tracking-wider">Efficiency</span>
+                    <span class="text-[9px] text-slate-500 uppercase font-black" id="time-target">Goal: 10h</span>
                 </div>
             </div>
-            <div class="glass rounded-xl p-5 glow">
-                <div class="flex justify-between items-start mb-4">
-                    <span class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Gym Sessions</span>
-                    <span class="text-xs bg-orange-500/20 text-orange-400 px-2 py-0.5 rounded">Hevy</span>
+            <div class="glass p-6 metric-card">
+                <div class="flex justify-between items-start mb-6">
+                    <span class="text-[10px] text-slate-500 uppercase tracking-[0.2em] font-black">Sessions</span>
+                    <div class="w-8 h-8 rounded-lg bg-green-500/10 flex items-center justify-center">
+                        <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+                    </div>
                 </div>
-                <div class="text-4xl font-bold stat-value" id="gym-sessions">--</div>
-                <div class="text-sm text-slate-500 mt-1">Weekly Strength</div>
-                <div class="mt-4 h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
-                    <div id="gym-progress" class="h-full bg-orange-500 transition-all duration-1000" style="width: 0%"></div>
+                <div class="flex items-baseline gap-1">
+                    <div class="text-5xl font-black tracking-tighter stat-value text-white" id="activity-count">--</div>
+                    <span class="text-slate-500 font-bold text-sm">count</span>
                 </div>
-                <div class="flex justify-between mt-1">
-                    <span class="text-[8px] text-slate-600 uppercase">Recovery</span>
-                    <span class="text-[8px] text-slate-600 uppercase" id="gym-target">Goal: 3</span>
+                <div class="mt-6 h-1 w-full bg-slate-900 rounded-full overflow-hidden">
+                    <div id="activity-progress" class="h-full bg-gradient-to-r from-green-600 to-green-400 transition-all duration-1000" style="width: 0%"></div>
+                </div>
+                <div class="flex justify-between mt-3">
+                    <span class="text-[9px] text-slate-600 uppercase font-bold tracking-wider">Consistency</span>
+                    <span class="text-[9px] text-slate-500 uppercase font-black" id="activity-target">Goal: 7</span>
+                </div>
+            </div>
+            <div class="glass p-6 metric-card">
+                <div class="flex justify-between items-start mb-6">
+                    <span class="text-[10px] text-slate-500 uppercase tracking-[0.2em] font-black">Gym Load</span>
+                    <div class="w-8 h-8 rounded-lg bg-orange-500/10 flex items-center justify-center">
+                        <svg class="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064"></path></svg>
+                    </div>
+                </div>
+                <div class="flex items-baseline gap-1">
+                    <div class="text-5xl font-black tracking-tighter stat-value text-white" id="gym-sessions">--</div>
+                    <span class="text-slate-500 font-bold text-sm">units</span>
+                </div>
+                <div class="mt-6 h-1 w-full bg-slate-900 rounded-full overflow-hidden">
+                    <div id="gym-progress" class="h-full bg-gradient-to-r from-orange-600 to-orange-400 transition-all duration-1000" style="width: 0%"></div>
+                </div>
+                <div class="flex justify-between mt-3">
+                    <span class="text-[9px] text-slate-600 uppercase font-bold tracking-wider">Recovery</span>
+                    <span class="text-[9px] text-slate-500 uppercase font-black" id="gym-target">Goal: 3</span>
                 </div>
             </div>
         </div>
@@ -121,13 +151,13 @@
         <!-- Charts and Details Row -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
             <div class="glass rounded-xl p-5 glow lg:col-span-2">
-                <h2 class="text-sm text-slate-400 uppercase tracking-wider font-semibold mb-4">Weekly Activity Breakdown</h2>
+                <h2 class="text-[10px] text-slate-500 uppercase tracking-[0.2em] font-black mb-6">Weekly Activity Breakdown</h2>
                 <div class="h-64">
                     <canvas id="activity-chart"></canvas>
                 </div>
             </div>
-            <div class="glass rounded-xl p-5 glow">
-                <h2 class="text-sm text-slate-400 uppercase tracking-wider font-semibold mb-4">Training Load History</h2>
+            <div class="glass p-6 metric-card">
+                <h2 class="text-[10px] text-slate-500 uppercase tracking-[0.2em] font-black mb-6">Load History</h2>
                 <div class="h-64">
                     <canvas id="load-history-chart"></canvas>
                 </div>
@@ -135,26 +165,29 @@
         </div>
 
         <!-- Training Plan -->
-        <div class="glass rounded-xl p-5 glow mb-6">
-            <h2 class="text-sm text-slate-400 uppercase tracking-wider font-semibold mb-4">Training Structure & Cycles</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6" id="plan-cycles">
+        <div class="glass p-6 mb-6">
+            <h2 class="text-[10px] text-slate-500 uppercase tracking-[0.2em] font-black mb-6">Strategy & Cycle Structure</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8" id="plan-cycles">
                 <!-- Macrociclo and Mesociclo will be inserted here -->
             </div>
-            <h3 class="text-sm text-slate-400 uppercase tracking-wider font-semibold mb-4">Current Week Detail (High Intensity)</h3>
-            <div class="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-7 gap-2" id="weekly-plan">
+            <div class="flex items-center gap-4 mb-6">
+                <h3 class="text-[10px] text-slate-500 uppercase tracking-[0.2em] font-black">Weekly Execution</h3>
+                <div class="h-px flex-1 bg-white/5"></div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-7 gap-4" id="weekly-plan">
                 <!-- Generated by JS -->
             </div>
         </div>
 
         <!-- Recent Activities -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
-            <div class="glass rounded-xl p-5 glow">
-                <h2 class="text-sm text-slate-400 uppercase tracking-wider font-semibold mb-4">Recent Activities (Strava)</h2>
-                <div id="strava-activities" class="space-y-2 max-h-80 overflow-y-auto"></div>
+            <div class="glass p-6">
+                <h2 class="text-[10px] text-slate-500 uppercase tracking-[0.2em] font-black mb-6">Strava Streams</h2>
+                <div id="strava-activities" class="space-y-3 max-h-96 overflow-y-auto pr-2 custom-scrollbar"></div>
             </div>
-            <div class="glass rounded-xl p-5 glow">
-                <h2 class="text-sm text-slate-400 uppercase tracking-wider font-semibold mb-4">Gym Workouts (Hevy)</h2>
-                <div id="hevy-workouts" class="space-y-2 max-h-80 overflow-y-auto"></div>
+            <div class="glass p-6">
+                <h2 class="text-[10px] text-slate-500 uppercase tracking-[0.2em] font-black mb-6">Hevy Workouts</h2>
+                <div id="hevy-workouts" class="space-y-3 max-h-96 overflow-y-auto pr-2 custom-scrollbar"></div>
             </div>
         </div>
 
@@ -177,19 +210,35 @@
             const diff = RACE_DATE - now;
             const days = Math.floor(diff / (1000 * 60 * 60 * 24));
             document.getElementById('countdown').textContent = days;
+
+            const weeks = days / 7;
+            let phase = '';
+            if (weeks > 24) phase = 'Pre-Season';
+            else if (weeks > 16) phase = 'Base Phase';
+            else if (weeks > 8) phase = 'Build Phase';
+            else if (weeks > 4) phase = 'Peak Phase';
+            else if (weeks > 1) phase = 'Taper Phase';
+            else phase = 'Race Week';
+            
+            document.getElementById('training-phase').textContent = phase;
         }
 
         function renderStravaList(activities) {
             const container = document.getElementById('strava-activities');
             container.innerHTML = activities.map(a => `
-                <div class="glass bg-slate-800/30 p-3 rounded-lg flex justify-between items-center activity-card">
-                    <div>
-                        <div class="text-sm font-semibold text-slate-200">${a.name}</div>
-                        <div class="text-[10px] text-slate-500 uppercase tracking-wider">${new Date(a.start_date).toLocaleDateString()} • ${a.type}</div>
+                <div class="glass bg-slate-900/40 p-4 rounded-xl flex justify-between items-center activity-card border border-white/5">
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-400">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+                        </div>
+                        <div>
+                            <div class="text-sm font-bold text-slate-100">${a.name}</div>
+                            <div class="text-[10px] text-slate-500 uppercase tracking-widest font-bold">${new Date(a.start_date).toLocaleDateString()} • ${a.type}</div>
+                        </div>
                     </div>
                     <div class="text-right">
-                        <div class="text-sm font-bold text-blue-400">${(a.distance/1000).toFixed(2)} km</div>
-                        <div class="text-[10px] text-slate-500">${Math.floor(a.moving_time/60)} min</div>
+                        <div class="text-sm font-black text-blue-400">${(a.distance/1000).toFixed(2)} <span class="text-[10px] text-slate-600">KM</span></div>
+                        <div class="text-[10px] text-slate-500 font-bold">${Math.floor(a.moving_time/60)} MIN</div>
                     </div>
                 </div>
             `).join('');
@@ -198,14 +247,19 @@
         function renderHevyList(workouts) {
             const container = document.getElementById('hevy-workouts');
             container.innerHTML = workouts.map(w => `
-                <div class="glass bg-slate-800/30 p-3 rounded-lg flex justify-between items-center activity-card">
-                    <div>
-                        <div class="text-sm font-semibold text-slate-200">${w.title}</div>
-                        <div class="text-[10px] text-slate-500 uppercase tracking-wider">${new Date(w.start_time).toLocaleDateString()}</div>
+                <div class="glass bg-slate-900/40 p-4 rounded-xl flex justify-between items-center activity-card border border-white/5">
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 rounded-full bg-orange-500/10 flex items-center justify-center text-orange-400">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064"></path></svg>
+                        </div>
+                        <div>
+                            <div class="text-sm font-bold text-slate-100">${w.title}</div>
+                            <div class="text-[10px] text-slate-500 uppercase tracking-widest font-bold">${new Date(w.start_time).toLocaleDateString()}</div>
+                        </div>
                     </div>
                     <div class="text-right">
-                        <div class="text-sm font-bold text-orange-400">${w.exercises.length} Exercises</div>
-                        <div class="text-[10px] text-slate-500">${Math.floor((new Date(w.end_time) - new Date(w.start_time))/60000)} min</div>
+                        <div class="text-sm font-black text-orange-400">${w.exercises.length} <span class="text-[10px] text-slate-600">EX</span></div>
+                        <div class="text-[10px] text-slate-500 font-bold">${Math.floor((new Date(w.end_time) - new Date(w.start_time))/60000)} MIN</div>
                     </div>
                 </div>
             `).join('');
@@ -237,16 +291,22 @@
             });
 
             cyclesContainer.innerHTML = `
-                <div class="bg-slate-800/40 rounded-lg p-4 border border-slate-700/50">
-                    <h4 class="text-xs text-blue-400 uppercase font-bold mb-3 tracking-widest">Global Macrociclo</h4>
-                    <ul class="text-sm space-y-2 text-slate-300">
-                        ${macroContent.map(item => `<li>${item.replace(/- \*\*(.*?)\*\*: /g, '<b class="text-slate-100">$1:</b> ').replace(/^- /,'')}</li>`).join('')}
+                <div class="bg-slate-900/40 rounded-2xl p-6 border border-white/5">
+                    <h4 class="text-[10px] text-blue-400 uppercase font-black mb-4 tracking-[0.2em]">Global Macrociclo</h4>
+                    <ul class="text-sm space-y-3 text-slate-400">
+                        ${macroContent.map(item => `<li class="flex gap-2">
+                            <span class="text-blue-500/50">•</span>
+                            <span>${item.replace(/- \*\*(.*?)\*\*: /g, '<b class="text-slate-100">$1:</b> ').replace(/^- /,'')}</span>
+                        </li>`).join('')}
                     </ul>
                 </div>
-                <div class="bg-slate-800/40 rounded-lg p-4 border border-slate-700/50">
-                    <h4 class="text-xs text-purple-400 uppercase font-bold mb-3 tracking-widest">Monthly Mesociclo</h4>
-                    <ul class="text-sm space-y-2 text-slate-300">
-                        ${mesoContent.map(item => `<li>${item.replace(/^  - /g, '• ').replace(/^- /g, '• ').replace(/\*\*(.*?)\*\*: /g, '<b class="text-slate-100">$1:</b> ')}</li>`).join('')}
+                <div class="bg-slate-900/40 rounded-2xl p-6 border border-white/5">
+                    <h4 class="text-[10px] text-purple-400 uppercase font-black mb-4 tracking-[0.2em]">Monthly Mesociclo</h4>
+                    <ul class="text-sm space-y-3 text-slate-400">
+                        ${mesoContent.map(item => `<li class="flex gap-2">
+                            <span class="text-purple-500/50">•</span>
+                            <span>${item.replace(/^  - /g, '• ').replace(/^- /g, '• ').replace(/\*\*(.*?)\*\*: /g, '<b class="text-slate-100">$1:</b> ')}</span>
+                        </li>`).join('')}
                     </ul>
                 </div>
             `;
@@ -262,13 +322,13 @@
                 const isToday = day.toLowerCase() === currentSpanishDay.toLowerCase();
 
                 return `
-                    <div class="glass p-3 rounded-lg border-l-4 ${isToday ? 'border-yellow-400 bg-yellow-400/10 ring-2 ring-yellow-400/20' : isHecho ? 'border-green-500 bg-green-500/10' : 'border-blue-500'} ${isToday ? 'scale-105 z-10 shadow-[0_0_15px_rgba(250,204,21,0.2)]' : ''} transition-all duration-300">
-                        <div class="flex justify-between items-start">
-                            <div class="text-[10px] uppercase ${isToday ? 'text-yellow-400 font-black' : 'text-slate-500 font-bold'} mb-1">${day} ${isToday ? '• TODAY' : ''}</div>
-                            ${isHecho ? '<div class="text-[8px] bg-green-500/20 text-green-400 px-1 rounded font-bold">DONE</div>' : ''}
+                    <div class="glass p-4 border-l-2 ${isToday ? 'border-yellow-400 bg-yellow-400/5 ring-1 ring-yellow-400/20' : isHecho ? 'border-green-500 bg-green-500/5' : 'border-blue-500/30'} ${isToday ? 'scale-105 z-10 shadow-2xl' : ''} transition-all duration-500">
+                        <div class="flex justify-between items-start mb-3">
+                            <div class="text-[9px] uppercase font-black tracking-widest ${isToday ? 'text-yellow-400' : 'text-slate-600'}">${day}</div>
+                            ${isHecho ? '<div class="w-2 h-2 rounded-full bg-green-500"></div>' : ''}
                         </div>
-                        <div class="text-xs font-semibold ${isToday ? 'text-white' : 'text-slate-200'}">${session.replace(/\*\*/g, '<b>').replace(/\*\*/g, '</b>')}</div>
-                        <div class="text-[9px] text-slate-400 mt-2 italic leading-tight">${notes}</div>
+                        <div class="text-[11px] font-bold leading-tight ${isToday ? 'text-white' : 'text-slate-200'}">${session.replace(/\*\*/g, '')}</div>
+                        <div class="text-[9px] text-slate-500 mt-3 font-medium leading-relaxed">${notes}</div>
                     </div>
                 `;
             }).join('');
@@ -281,11 +341,14 @@
             ];
 
             predictionContainer.innerHTML = metrics.map(m => `
-                <div class="flex flex-col">
-                    <span class="text-[10px] text-slate-500 uppercase font-bold">${m.label}</span>
-                    <div class="flex items-baseline gap-2 mt-1">
-                        <span class="text-2xl font-bold ${m.color}">${m.real}</span>
-                        <span class="text-xs text-slate-400">/ Target: ${m.target}</span>
+                <div class="flex flex-col relative">
+                    <span class="text-[10px] text-slate-500 uppercase font-black tracking-widest mb-2">${m.label}</span>
+                    <div class="flex items-baseline gap-3">
+                        <span class="text-4xl font-black ${m.color} tracking-tighter">${m.real}</span>
+                        <div class="flex flex-col">
+                            <span class="text-[9px] text-slate-600 uppercase font-bold">Target</span>
+                            <span class="text-xs text-slate-400 font-black">${m.target}</span>
+                        </div>
                     </div>
                 </div>
             `).join('');
@@ -344,9 +407,10 @@
                     const weatherEl = document.getElementById('weather-display');
                     weatherEl.classList.remove('hidden');
                     weatherEl.innerHTML = `
-                        <span class="text-xs text-slate-300">Hamburg:</span>
-                        <span class="text-sm font-bold text-blue-300">${w.temperature}°C</span>
-                        <span class="text-[10px] text-slate-500 ml-1">Wind: ${w.windspeed}km/h</span>
+                        <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Hamburg</span>
+                        <span class="text-sm font-black text-blue-400 tracking-tight">${w.temperature}°C</span>
+                        <div class="w-px h-3 bg-white/10 mx-1"></div>
+                        <span class="text-[10px] text-slate-500 font-bold">${w.windspeed}km/h</span>
                     `;
                 }
 
@@ -368,9 +432,11 @@
                     datasets: [{
                         label: 'Distance (km)',
                         data: types.map(t => stats.byType[t].distance),
-                        backgroundColor: 'rgba(59, 130, 246, 0.5)',
+                        backgroundColor: 'rgba(59, 130, 246, 0.4)',
                         borderColor: 'rgb(59, 130, 246)',
-                        borderWidth: 1
+                        borderWidth: 2,
+                        borderRadius: 4,
+                        hoverBackgroundColor: 'rgba(59, 130, 246, 0.6)'
                     }]
                 },
                 options: {
@@ -379,15 +445,16 @@
                     scales: { 
                         y: { 
                             beginAtZero: true, 
-                            grid: { color: 'rgba(255,255,255,0.05)' },
-                            ticks: { color: '#94a3b8' }
+                            grid: { color: 'rgba(255,255,255,0.03)', drawBorder: false },
+                            ticks: { color: '#475569', font: { size: 10, weight: '700' } }
                         },
                         x: {
-                            ticks: { color: '#94a3b8' }
+                            grid: { display: false },
+                            ticks: { color: '#475569', font: { size: 10, weight: '700' }, uppercase: true }
                         }
                     },
                     plugins: {
-                        legend: { labels: { color: '#94a3b8' } }
+                        legend: { display: false }
                     }
                 }
             });
@@ -406,11 +473,20 @@
                         label: 'Duration (h)',
                         data: loadValues,
                         borderColor: '#8b5cf6',
-                        backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                        backgroundColor: (context) => {
+                            const ctx = context.chart.ctx;
+                            const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+                            gradient.addColorStop(0, 'rgba(139, 92, 246, 0.2)');
+                            gradient.addColorStop(1, 'rgba(139, 92, 246, 0)');
+                            return gradient;
+                        },
                         fill: true,
                         tension: 0.4,
                         borderWidth: 3,
-                        pointBackgroundColor: '#8b5cf6'
+                        pointRadius: 0,
+                        pointHitRadius: 10,
+                        pointHoverRadius: 5,
+                        pointHoverBackgroundColor: '#8b5cf6'
                     }]
                 },
                 options: {
@@ -419,11 +495,12 @@
                     scales: { 
                         y: { 
                             beginAtZero: true, 
-                            grid: { color: 'rgba(255,255,255,0.05)' },
-                            ticks: { color: '#94a3b8' }
+                            grid: { color: 'rgba(255,255,255,0.03)', drawBorder: false },
+                            ticks: { color: '#475569', font: { size: 10, weight: '700' } }
                         },
                         x: {
-                            ticks: { color: '#94a3b8' }
+                            grid: { display: false },
+                            ticks: { color: '#475569', font: { size: 10, weight: '700' } }
                         }
                     },
                     plugins: {
