@@ -36,6 +36,9 @@
                     <div class="flex items-center gap-3">
                         <div class="w-2.5 h-2.5 bg-green-500 rounded-full pulse" id="status-indicator"></div>
                         <span class="text-[10px] text-slate-500 uppercase tracking-[0.2em] font-bold">System Online</span>
+                        <div id="consistency-badge" class="ml-4 px-3 py-1 bg-green-500/10 text-green-400 rounded-full border border-green-500/20 text-[10px] font-black uppercase tracking-widest hidden">
+                            Score: <span id="consistency-val">0%</span>
+                        </div>
                         <div id="weather-display" class="hidden md:flex items-center gap-2 ml-4 px-4 py-1.5 bg-slate-900/50 rounded-full border border-white/5">
                             <!-- Weather injected here -->
                         </div>
@@ -277,6 +280,9 @@
             let weeklyTable = [];
             let predictionContent = [];
 
+            let totalPlanned = 0;
+            let totalDone = 0;
+
             lines.forEach(line => {
                 const trimmed = line.trim();
                 if (trimmed.includes('## 📅 Plan Global')) currentSection = 'macro';
@@ -286,9 +292,34 @@
                 
                 if (currentSection === 'macro' && trimmed.startsWith('- **')) macroContent.push(trimmed);
                 if (currentSection === 'meso' && (trimmed.startsWith('- **') || trimmed.startsWith('• ') || trimmed.startsWith('  - '))) mesoContent.push(trimmed);
-                if (currentSection === 'weekly' && trimmed.startsWith('| **')) weeklyTable.push(trimmed);
+                if (currentSection === 'weekly' && trimmed.startsWith('| **')) {
+                    weeklyTable.push(trimmed);
+                    const parts = trimmed.split('|').filter(p => p.trim() !== '');
+                    const primary = parts[1]?.trim() || '';
+                    const secondary = parts[2]?.trim() || '';
+                    const notes = parts[3]?.trim() || '';
+                    
+                    if (primary && !primary.includes('SKIPPED') && !primary.includes('Descanso')) totalPlanned++;
+                    if (secondary && !secondary.includes('SKIPPED') && !secondary.includes('Descanso') && secondary !== '-') totalPlanned++;
+                    
+                    const hechoCount = (notes.match(/hecho/gi) || []).length;
+                    totalDone += hechoCount;
+                }
                 if (currentSection === 'prediction' && trimmed.startsWith('- **')) predictionContent.push(trimmed);
             });
+
+            if (totalPlanned > 0) {
+                const score = Math.min(Math.round((totalDone / totalPlanned) * 100), 100);
+                const badge = document.getElementById('consistency-badge');
+                document.getElementById('consistency-val').textContent = score + '%';
+                badge.classList.remove('hidden');
+                
+                // Color coding based on completion
+                badge.className = "ml-4 px-3 py-1 rounded-full border text-[10px] font-black uppercase tracking-widest";
+                if (score < 50) badge.className += " bg-red-500/10 text-red-400 border-red-500/20";
+                else if (score < 80) badge.className += " bg-yellow-500/10 text-yellow-400 border-yellow-500/20";
+                else badge.className += " bg-green-500/10 text-green-400 border-green-500/20";
+            }
 
             cyclesContainer.innerHTML = `
                 <div class="bg-slate-900/40 rounded-2xl p-6 border border-white/5">
