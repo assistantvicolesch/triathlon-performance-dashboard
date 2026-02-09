@@ -72,7 +72,7 @@
         </div>
 
         <!-- Main Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
             <div class="glass p-6 metric-card">
                 <div class="flex justify-between items-start mb-6">
                     <span class="text-[10px] text-slate-500 uppercase tracking-[0.2em] font-black">Weekly Distance</span>
@@ -147,6 +147,27 @@
                 <div class="flex justify-between mt-3">
                     <span class="text-[9px] text-slate-600 uppercase font-bold tracking-wider">Recovery</span>
                     <span class="text-[9px] text-slate-500 uppercase font-black" id="gym-target">Goal: 3</span>
+                </div>
+            </div>
+            <div class="glass p-6 metric-card">
+                <div class="flex justify-between items-start mb-6">
+                    <span class="text-[10px] text-slate-500 uppercase tracking-[0.2em] font-black">Daily Fueling</span>
+                    <div class="w-8 h-8 rounded-lg bg-rose-500/10 flex items-center justify-center">
+                        <svg class="w-4 h-4 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.99 7.99 0 0120 13a7.98 7.98 0 01-2.343 5.657z"></path></svg>
+                    </div>
+                </div>
+                <div class="flex items-baseline gap-1">
+                    <div class="text-5xl font-black tracking-tighter stat-value text-white" id="daily-energy">--</div>
+                    <span class="text-slate-500 font-bold text-sm">kcal</span>
+                </div>
+                <div class="mt-6 flex gap-1 h-1 w-full bg-slate-900 rounded-full overflow-hidden">
+                    <div id="carb-bar" class="h-full bg-blue-500 transition-all duration-1000" style="width: 0%"></div>
+                    <div id="pro-bar" class="h-full bg-rose-500 transition-all duration-1000" style="width: 0%"></div>
+                    <div id="fat-bar" class="h-full bg-yellow-500 transition-all duration-1000" style="width: 0%"></div>
+                </div>
+                <div class="flex justify-between mt-3">
+                    <span class="text-[9px] text-slate-600 uppercase font-bold tracking-wider">P / C / F</span>
+                    <span class="text-[9px] text-slate-500 uppercase font-black" id="macro-summary">-- / -- / --</span>
                 </div>
             </div>
         </div>
@@ -423,6 +444,20 @@
                     if (statusTag) {
                         statusTag.textContent = loadData.load_status + ' Load';
                         statusTag.className = `text-[10px] px-2 py-0.5 rounded ${loadData.load_status === 'High' ? 'bg-red-500/20 text-red-400' : 'bg-green-500/20 text-green-400'}`;
+                    }
+                }
+
+                // Update Nutrition Card
+                if (loadData.nutrition) {
+                    const n = loadData.nutrition;
+                    document.getElementById('daily-energy').textContent = Math.round(n.energy);
+                    document.getElementById('macro-summary').textContent = `${Math.round(n.protein)}g / ${Math.round(n.carbs)}g / ${Math.round(n.fat)}g`;
+                    
+                    const totalGrams = parseFloat(n.protein) + parseFloat(n.carbs) + parseFloat(n.fat);
+                    if (totalGrams > 0) {
+                        document.getElementById('carb-bar').style.width = `${(parseFloat(n.carbs) / totalGrams) * 100}%`;
+                        document.getElementById('pro-bar').style.width = `${(parseFloat(n.protein) / totalGrams) * 100}%`;
+                        document.getElementById('fat-bar').style.width = `${(parseFloat(n.fat) / totalGrams) * 100}%`;
                     }
                 }
 
