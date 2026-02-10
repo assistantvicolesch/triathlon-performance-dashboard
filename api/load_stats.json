@@ -1,20 +1,8 @@
 {
-  "last_updated": "2026-02-06T18:57:28.857Z",
-  "total_hours": 8.66,
+  "last_updated": "2026-02-09T17:29:49.273Z",
+  "total_hours": 11.51,
   "load_status": "High",
   "daily_stats": [
-    {
-      "date": "2026-01-31",
-      "duration_h": 1.41
-    },
-    {
-      "date": "2026-02-01",
-      "duration_h": 0
-    },
-    {
-      "date": "2026-02-02",
-      "duration_h": 3.19
-    },
     {
       "date": "2026-02-03",
       "duration_h": 0
@@ -30,12 +18,24 @@
     {
       "date": "2026-02-06",
       "duration_h": 0.59
+    },
+    {
+      "date": "2026-02-07",
+      "duration_h": 3.79
+    },
+    {
+      "date": "2026-02-08",
+      "duration_h": 0.6
+    },
+    {
+      "date": "2026-02-09",
+      "duration_h": 0.58
     }
   ],
   "nutrition": {
-    "energy": "1680.34",
-    "protein": "108.91",
-    "carbs": "245.36",
-    "fat": "34.09"
+    "energy": "1409.55",
+    "protein": "107.44",
+    "carbs": "155.12",
+    "fat": "45.13"
   }
 }

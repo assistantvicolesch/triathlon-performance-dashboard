@@ -25,6 +25,8 @@
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+        .tag-active { background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); }
+        .tag-inactive { background: rgba(30, 41, 59, 0.5); color: #475569; border: 1px solid rgba(255, 255, 255, 0.05); }
     </style>
 </head>
 <body class="text-slate-100 p-4 md:p-8">
@@ -204,7 +206,31 @@
         </div>
 
         <!-- Recent Activities -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+            <div class="glass p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-[10px] text-slate-500 uppercase tracking-[0.2em] font-black">Equipment Status</h2>
+                    <span class="text-[9px] text-slate-600 uppercase font-bold tracking-wider">Active Tech</span>
+                </div>
+                <div id="equipment-list" class="space-y-3">
+                    <div class="flex items-center justify-between p-3 rounded-xl tag-inactive">
+                        <span class="text-[11px] font-bold">Wahoo KICKR</span>
+                        <span class="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded bg-slate-800">Standby</span>
+                    </div>
+                    <div class="flex items-center justify-between p-3 rounded-xl tag-inactive">
+                        <span class="text-[11px] font-bold">Garmin Forerunner 955</span>
+                        <span class="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded bg-slate-800">Standby</span>
+                    </div>
+                    <div class="flex items-center justify-between p-3 rounded-xl tag-inactive">
+                        <span class="text-[11px] font-bold">Coros Heart Rate</span>
+                        <span class="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded bg-slate-800">Standby</span>
+                    </div>
+                    <div class="flex items-center justify-between p-3 rounded-xl tag-inactive">
+                        <span class="text-[11px] font-bold">Form Smart Goggles</span>
+                        <span class="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded bg-slate-800">Standby</span>
+                    </div>
+                </div>
+            </div>
             <div class="glass p-6">
                 <h2 class="text-[10px] text-slate-500 uppercase tracking-[0.2em] font-black mb-6">Strava Streams</h2>
                 <div id="strava-activities" class="space-y-3 max-h-96 overflow-y-auto pr-2 custom-scrollbar"></div>
@@ -464,6 +490,22 @@
                 renderStravaList(data.strava.activities);
                 renderHevyList(data.hevy.workouts);
                 
+                if (data.strava.activities && data.strava.activities.length > 0) {
+                    const lastActivity = data.strava.activities[0];
+                    const diffMinutes = (new Date() - new Date(lastActivity.start_date)) / 60000;
+                    if (diffMinutes < 180) { // Active in last 3 hours
+                        const gear = lastActivity.device_name || (lastActivity.type === 'Ride' ? 'Wahoo KICKR' : 'Garmin Forerunner 955');
+                        const list = document.getElementById('equipment-list');
+                        const items = list.querySelectorAll('div');
+                        items.forEach(item => {
+                            if (item.textContent.includes(gear)) {
+                                item.className = 'flex items-center justify-between p-3 rounded-xl tag-active';
+                                item.querySelector('span:last-child').textContent = 'Live / Sync';
+                            }
+                        });
+                    }
+                }
+
                 if (data.trainingPlan) {
                     renderTrainingData(data.trainingPlan, data.healthData);
                 }

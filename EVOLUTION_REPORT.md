@@ -1,5 +1,14 @@
 # Reporte de Evolución: Triathlon Dashboard Hamburg 2026
 
+## [2026-02-10] Evolución: Monitor de Estado de Equipamiento (Tech Stack)
+Se ha implementado un panel de monitorización de hardware deportivo para centralizar el estado de los dispositivos críticos.
+
+- **Panel de Equipamiento:** Añadida una nueva sección "Equipment Status" que lista los dispositivos clave (Wahoo, Garmin, Coros, Form).
+- **Detección de Actividad:** El sistema analiza ahora el timestamp de la última actividad de Strava para marcar dispositivos como "Live / Sync" si han estado activos en las últimas 3 horas.
+- **UI Contextual:** Implementados estados visuales diferenciados (tag-active vs tag-inactive) con efectos de resplandor sutiles para identificar rápidamente qué hardware está sincronizando datos.
+- **Optimización de Layout:** Se ha reestructurado la sección inferior en una cuadrícula de 3 columnas para equilibrar la densidad de información entre Hardware, Strava y Hevy.
+
+---
 ## [2026-02-09] Evolución: Integración de Nutrición (Fueling)
 Se ha implementado una nueva métrica crítica para el rendimiento en triatlón: el seguimiento nutricional diario.
 
