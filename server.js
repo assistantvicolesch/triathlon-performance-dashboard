@@ -120,6 +120,10 @@ const server = http.createServer(async (req, res) => {
             const trainingPlanPath = path.join(__dirname, '..', 'TRAINING_PLAN.md');
             const trainingPlan = fs.existsSync(trainingPlanPath) ? fs.readFileSync(trainingPlanPath, 'utf8') : '';
 
+            // Load HEALTH_METRICS (Withings/Manual)
+            const loadStatsPath = path.join(__dirname, 'api', 'load_stats.json');
+            const loadStats = fs.existsSync(loadStatsPath) ? JSON.parse(fs.readFileSync(loadStatsPath, 'utf8')) : {};
+
             // Calculate weekly stats
             const now = new Date();
             const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
@@ -157,7 +161,7 @@ const server = http.createServer(async (req, res) => {
                 trainingPlan: trainingPlan,
                 healthData: {
                     vo2max: 37.6, // To be dynamic in future
-                    weight: 77.2,
+                    weight: loadStats.nutrition?.weight || 77.2,
                     threshold: '5:00 min/km'
                 },
                 generated: new Date().toISOString()
