@@ -183,7 +183,8 @@
                 </div>
             </div>
             <div class="glass p-6 metric-card">
-                <h2 class="text-[10px] text-slate-500 uppercase tracking-[0.2em] font-black mb-6">Load History</h2>
+                <h2 class="text-[10px] text-slate-500 uppercase tracking-[0.2em] font-black mb-2">Load History</h2>
+                <p class="text-[10px] text-slate-600 uppercase tracking-widest font-bold mb-4" id="load-summary">Weekly Load: -- h • Status: --</p>
                 <div class="h-64">
                     <canvas id="load-history-chart"></canvas>
                 </div>
@@ -533,6 +534,13 @@
             const ctx1 = document.getElementById('activity-chart').getContext('2d');
             const types = Object.keys(stats.byType);
             if (activityChart) activityChart.destroy();
+
+            const loadSummaryEl = document.getElementById('load-summary');
+            if (loadSummaryEl && loadData && typeof loadData.total_hours === 'number' && loadData.load_status) {
+                const hours = loadData.total_hours.toFixed(1);
+                loadSummaryEl.textContent = `Weekly Load: ${hours} h • Status: ${loadData.load_status}`;
+            }
+
             activityChart = new Chart(ctx1, {
                 type: 'bar',
                 data: {
