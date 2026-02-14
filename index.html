@@ -108,8 +108,11 @@
                 <div class="mt-6 h-1 w-full bg-slate-900 rounded-full overflow-hidden">
                     <div id="time-progress" class="h-full bg-gradient-to-r from-purple-600 to-purple-400 transition-all duration-1000" style="width: 0%"></div>
                 </div>
-                <div class="flex justify-between mt-3">
-                    <span class="text-[9px] text-slate-600 uppercase font-bold tracking-wider">Efficiency</span>
+                <div class="flex justify-between items-center mt-3">
+                    <div class="flex flex-col">
+                        <span class="text-[9px] text-slate-600 uppercase font-bold tracking-wider">Efficiency</span>
+                        <span id="load-status-tag" class="mt-1 inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest bg-slate-800 text-slate-400 border border-slate-700">Load: --</span>
+                    </div>
                     <span class="text-[9px] text-slate-500 uppercase font-black" id="time-target">Goal: 10h</span>
                 </div>
             </div>
@@ -466,11 +469,16 @@
 
                 // Update Training Time card with load status
                 if (loadData.load_status) {
-                    const timeCard = document.getElementById('weekly-time').parentElement;
-                    const statusTag = timeCard.querySelector('span:last-child');
+                    const statusTag = document.getElementById('load-status-tag');
                     if (statusTag) {
-                        statusTag.textContent = loadData.load_status + ' Load';
-                        statusTag.className = `text-[10px] px-2 py-0.5 rounded ${loadData.load_status === 'High' ? 'bg-red-500/20 text-red-400' : 'bg-green-500/20 text-green-400'}`;
+                        statusTag.textContent = `Load: ${loadData.load_status}`;
+                        if (loadData.load_status === 'High') {
+                            statusTag.className = 'mt-1 inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest bg-red-500/20 text-red-400 border border-red-500/40';
+                        } else if (loadData.load_status === 'Low') {
+                            statusTag.className = 'mt-1 inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest bg-emerald-500/20 text-emerald-400 border border-emerald-500/40';
+                        } else {
+                            statusTag.className = 'mt-1 inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest bg-yellow-500/20 text-yellow-400 border border-yellow-500/40';
+                        }
                     }
                 }
 
