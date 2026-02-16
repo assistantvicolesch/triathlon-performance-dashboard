@@ -11,6 +11,8 @@
         * { font-family: 'Inter', sans-serif; }
         body { background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%); min-height: 100vh; }
         .glass { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 1.5rem; }
+        .bg-anim { animation: headerPulse 8s infinite alternate; }
+        @keyframes headerPulse { 0% { background: rgba(15, 23, 42, 0.8); } 100% { background: rgba(20, 28, 55, 0.9); } }
         .glow { box-shadow: 0 0 40px rgba(59, 130, 246, 0.1); }
         .btn-action { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         .btn-action:hover { transform: translateY(-1px); filter: brightness(1.2); }
@@ -32,7 +34,7 @@
 <body class="text-slate-100 p-4 md:p-8">
     <div class="max-w-7xl mx-auto">
         <!-- Header -->
-        <header class="glass rounded-2xl p-6 mb-6 glow">
+        <header class="glass rounded-2xl p-6 mb-6 glow bg-anim">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
                     <div class="flex items-center gap-3">
