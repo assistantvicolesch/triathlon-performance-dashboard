@@ -657,5 +657,11 @@
         setInterval(updateCountdown, 60000);
         setInterval(refreshData, 300000);
     </script>
+<button id="darkToggle" style="position:fixed;bottom:10px;right:10px;z-index:1000;">🌙</button>
+<script>
+document.getElementById('darkToggle').addEventListener('click',()=>{
+  document.body.classList.toggle('dark');
+});
+</script>
 </body>
 </html>
