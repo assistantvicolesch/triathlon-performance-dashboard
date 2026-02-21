@@ -39,7 +39,7 @@
                 <div>
                     <div class="flex items-center gap-3">
                         <div class="w-2.5 h-2.5 bg-green-500 rounded-full pulse" id="status-indicator"></div>
-                        <span class="text-[10px] text-slate-500 uppercase tracking-[0.2em] font-bold">System Online</span>
+                        <span id="system-status-text" class="text-[10px] text-slate-500 uppercase tracking-[0.2em] font-bold">System Online</span>
                         <div id="consistency-badge" class="ml-4 px-3 py-1 bg-green-500/10 text-green-400 rounded-full border border-green-500/20 text-[10px] font-black uppercase tracking-widest hidden">
                             Score: <span id="consistency-val">0%</span>
                         </div>
@@ -454,6 +454,21 @@
             `).join('');
         }
 
+        function setSystemStatus(state) {
+            const indicator = document.getElementById('status-indicator');
+            const label = document.getElementById('system-status-text');
+
+            if (state === 'online') {
+                indicator.classList.add('bg-green-500', 'pulse');
+                indicator.classList.remove('bg-red-500');
+                label.textContent = 'System Online';
+            } else {
+                indicator.classList.add('bg-red-500');
+                indicator.classList.remove('bg-green-500', 'pulse');
+                label.textContent = 'Data Offline';
+            }
+        }
+
         async function refreshData() {
             try {
                 const response = await fetch('/api/dashboard');
@@ -550,9 +565,11 @@
                 }
 
                 updateCharts(data.strava.weeklyStats, loadData);
+                setSystemStatus('online');
                 document.getElementById('last-updated').textContent = 'Updated: ' + new Date().toLocaleTimeString();
             } catch (e) {
                 console.error('Fetch error:', e);
+                setSystemStatus('offline');
             }
         }
 
